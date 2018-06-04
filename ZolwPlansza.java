@@ -1,4 +1,4 @@
-package ZOlw;
+package Zolw;
 
 import javax.swing.*;
 import java.awt.*;
@@ -8,6 +8,7 @@ import java.util.Timer;
 
 public class ZolwPlansza extends JFrame {
     int poziomTrudnosci;
+    
     public ZolwPlansza(int poziomTrudnosci){
         super("Żołw");
         this.poziomTrudnosci = poziomTrudnosci;
@@ -22,7 +23,6 @@ public class ZolwPlansza extends JFrame {
         stworzListePolPustych(planszaDoGry);
         stworzListeZuczkow();
         planszaPanel = new JPanel(new GridLayout(planszaDoGry.length, planszaDoGry.length));
-
         timer = new Timer();
         timer.schedule( new Nagroda(), new Date(),4000);
         timerTextField = new TextField();
@@ -33,7 +33,7 @@ public class ZolwPlansza extends JFrame {
         wynikTextField.setText(Integer.toString(wynik));
 
 
-        kontener.add(planszaPanel);
+        kontener.add(planszaPanel); // dodajemy do panelu kazde PolePlanszy 
         for (int i = planszaDoGry.length - 1; i >= 0; i--){
             for (int j = planszaDoGry.length - 1; j >= 0; j--){
                 planszaPanel.add(planszaDoGry[i][j]);
@@ -57,6 +57,7 @@ public class ZolwPlansza extends JFrame {
                             wynik -= 15;
                             wynikTextField.setText(Integer.toString(wynik));
                             planszaDoGry[z.getX() + 1][z.getY()].setStatus("puste");
+                            Toolkit.getDefaultToolkit().beep();
                         }
                         z.idz();
                         polozZolwia();
@@ -121,6 +122,7 @@ public class ZolwPlansza extends JFrame {
                             wynik -= 15;
                             wynikTextField.setText(Integer.toString(wynik));
                             planszaDoGry[z.getX()][z.getY() + 1].setStatus("puste");
+                            Toolkit.getDefaultToolkit().beep();
                         }
                         z.idz();
                         polozZolwia();
@@ -154,6 +156,7 @@ public class ZolwPlansza extends JFrame {
                             wynik -= 15;
                             wynikTextField.setText(Integer.toString(wynik));
                             planszaDoGry[z.getX()][z.getY() - 1].setStatus("puste");
+                            Toolkit.getDefaultToolkit().beep();
                         }
                         z.idz();
                         polozZolwia();
@@ -198,7 +201,7 @@ public class ZolwPlansza extends JFrame {
      public PolePlanszy(){
             this.setSize(50, 50);
             this.setIcon(new ImageIcon("grass.jpg"));
-            this.setToolTipText("");
+            this.setToolTipText("Poruszaj żółwiem za pomocą strzałęk.");
             this.status = "puste";
      }
      public void setPolePlanszy(String nazwaPliku){
@@ -218,20 +221,19 @@ public class ZolwPlansza extends JFrame {
     class PrzyciskRuchu extends JButton {
      public PrzyciskRuchu(String ikonka) {
          this.setIcon(new ImageIcon(ikonka));
-
      }
   }
 
-  class Nagroda extends java.util.TimerTask{
+  class Nagroda extends java.util.TimerTask{  
 
      private Random r = new Random();
      @Override
-     public void run() {
+     public void run() { // co jakiś czas randomowo będą się pojawiać żuczki w polach pustych
          PolePlanszy poleRandomowe = listaPolPustych.get(r.nextInt(listaPolPustych.size()-1));
          int zukRandomowy = r.nextInt(listaZuczkow.size());
          poleRandomowe.setIcon(new ImageIcon(listaZuczkow.get(zukRandomowy)));
          if(zukRandomowy == 7){
-             poleRandomowe.setStatus("trucizna");
+             poleRandomowe.setStatus("trucizna"); // za "zjedzenie" czerwonego żuka punkty będą odejmowane
          }
          else
              poleRandomowe.setStatus("nagroda");
@@ -240,12 +242,12 @@ public class ZolwPlansza extends JFrame {
 
   private void sprawdzStanGry(){
         if (this.poziomTrudnosci < 3) {
-            if (wynik == 100) {
+            if (wynik >= 100) {  // po zdobyciu 100 punktów przechodzimy na kolejny poziom trudnosci (wyświetla się plansza z większą ilością przeszkod)
                 this.setVisible(false);
                 new ZolwPlansza(this.poziomTrudnosci + 1).setVisible(true);
             }
         }
-        else if (wynik >= 100){
+        else if (wynik >= 100){ 
             JOptionPane.showMessageDialog(rootPane, "Wygrałeś. Zagraj pomownie");
             nowaGra.doClick();
         }
@@ -253,7 +255,7 @@ public class ZolwPlansza extends JFrame {
 
   private void stworzPlansze(int poziomTrudnosci) {
      planszaDoGry = new PolePlanszy[15][15];
-     listaKamykow = new LinkedList<>();
+     listaKamykow = new LinkedList<>(); // tworzymy liste pol niedostępnych dla żółwia
 
      for (int i = 0; i < 15; i ++){
          for (int n = 0; n < 15; n ++){
@@ -262,7 +264,8 @@ public class ZolwPlansza extends JFrame {
      }
      z = new Zolw(0, 0, 0, planszaDoGry.length, planszaDoGry.length);
      planszaDoGry[z.getX()][z.getY()].setIcon(new ImageIcon("little-turtle.jpg"));
-     switch (poziomTrudnosci) {
+     // w zaleznosci od poziomu trudnosci pojawia się coraz więcej pol planszy, na ktore Żółw nie może wejść
+      switch (poziomTrudnosci) {
          case 1:
              for (int y = 8; y < 13; y++){
                  int x = 4;
@@ -385,7 +388,7 @@ public class ZolwPlansza extends JFrame {
 
     }
 
-  private void stworzListePolPustych(PolePlanszy[][] plansza){
+  private void stworzListePolPustych(PolePlanszy[][] plansza){ // tworzymy liste pol pustych (tzn. tych, w których może pojawic się "jedzenie żółwia"
      listaPolPustych = new HashMap<>();
      int n = 0;
      for (int i = 0; i < plansza.length; i++){
@@ -401,6 +404,7 @@ public class ZolwPlansza extends JFrame {
   private void polozZolwia(){
      planszaDoGry[z.getX()][z.getY()].setIcon(new ImageIcon("little-turtle.jpg"));
    }
+    
    private void stworzListeZuczkow() {
      listaZuczkow = new HashMap<>();
      listaZuczkow.put(0, "beetle.jpg");
@@ -415,12 +419,13 @@ public class ZolwPlansza extends JFrame {
 
 
     public static void main(String[] args){
-     new ZolwPlansza(3).setVisible(true);
+     new ZolwPlansza(1).setVisible(true);
 
     }
+    
+    // deklaracja zmiennych
     private JPanel planszaPanel ;
     private PolePlanszy[][] planszaDoGry;
-
     public Timer timer;
     private int wynik = 0;
     private JButton nowaGra;
